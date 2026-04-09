@@ -36,8 +36,7 @@ For `MANU.py`, the LoRA is first merged into the base model and pruning is then 
 
 Example:
 
-    CUDA_VISIBLE_DEVICES=4,5,6,7 \
-    accelerate launch --num_processes 4 CLEAR_finetune.py \
+    python CLEAR_finetune.py \
       --base_model_dir /path/to/llava-1.5-7b-hf \
       --save_dir /path/to/save/pre_unlearning_model \
       --dataset_name data/CLEAR/full+tofu \

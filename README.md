@@ -2,18 +2,14 @@
 
 Official implementation of **CMJU**: **Cross-Modal Joint Unlearning for Balanced Forgetting in Multimodal Large Language Models**.
 
-CMJU studies **balanced cross-modal unlearning** in multimodal large language models. It aims to remove target knowledge in a coordinated way across both **multimodal** and **text-only** inputs.
+CMJU studies balanced cross-modal unlearning in multimodal large language models, aiming to remove target knowledge consistently across both **multimodal** and **text-only** inputs.
 
 ## Overview
 
-CMJU is designed for the **modality-complete supervision** setting, where paired multimodal and text-only forget samples are both available.
-
-The framework contains two stages:
+CMJU is designed for the modality-complete supervision setting and consists of two stages:
 
 - **Stage 1:** Dual-Path Saliency Estimation and LoRA Grouping
 - **Stage 2:** Differentiated Consistency Unlearning
-
-CMJU explicitly coordinates multimodal and text-only forgetting signals to improve cross-modal forgetting balance while preserving retain-set performance.
 
 ## Repository Structure
 
@@ -23,19 +19,19 @@ CMJU explicitly coordinates multimodal and text-only forgetting signals to impro
         ├── CLEAR/
         └── UMU_Bench/
 
-- `CMJU/CLEAR/`: code for experiments on the **CLEAR** benchmark
-- `CMJU/UMU_Bench/`: code for experiments on the **UMU-Bench** benchmark
-
-## Supported Datasets
+## Datasets
 
 - **UMU-Bench**: https://huggingface.co/datasets/chengyewang/UMU-bench
 - **CLEAR**: https://huggingface.co/datasets/therem/CLEAR
 
-## Main Components
+## Code
 
-Each dataset directory includes:
+- `CMJU/UMU_Bench/`: code for experiments on **UMU-Bench**
+- `CMJU/CLEAR/`: code for experiments on **CLEAR**
 
-- fine-tuning scripts for obtaining the **pre-unlearning model**
+Each directory contains:
+
+- fine-tuning scripts
 - unlearning methods:
   - `GA.py`
   - `GD.py`
@@ -48,33 +44,19 @@ Each dataset directory includes:
 ## Workflow
 
 1. Prepare the dataset
-2. Fine-tune the base MLLM
+2. Fine-tune the base model
 3. Run an unlearning method
 4. Evaluate the unlearned model
 
-For most LoRA-based methods, the pre-unlearning model is:
+For most LoRA-based methods:
 
     base_model + pre-unlearning LoRA
 
-For pruning-based methods such as `MANU`, the LoRA is first merged into the base model and pruning is then applied to the merged model.
-
-## Results
-
-Experiments on **UMU-Bench** and **CLEAR** show that CMJU achieves better **cross-modal forgetting balance** than strong baselines while maintaining competitive retain-set performance.
+For `MANU`, the LoRA is first merged into the base model and then pruning is applied.
 
 ## Usage
 
-Please refer to the dataset-specific directories for detailed instructions:
+See the dataset-specific instructions:
 
-- `CMJU/UMU_Bench/`
-- `CMJU/CLEAR/`
-
-## Acknowledgements
-
-We thank the authors and maintainers of:
-
-- UMU-Bench
-- CLEAR
-- Hugging Face Transformers
-- PEFT
-- Accelerate
+- [UMU-Bench README](./CMJU/UMU_Bench/README.md)
+- [CLEAR README](./CMJU/CLEAR/README.md)

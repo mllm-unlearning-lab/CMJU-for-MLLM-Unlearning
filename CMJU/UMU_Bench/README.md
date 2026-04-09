@@ -1,130 +1,183 @@
-# ✨Baselines 
+# CMJU on UMU-Bench
 
-## GA
+This directory contains the implementation of **CMJU** and baseline unlearning methods on the **UMU-Bench** benchmark.
 
-This section describes how to run the GA (Gradient Ascent) baseline.
-GA performs forgetting by maximizing the training loss on the forget set, starting from a pre-unlearning model constructed as base model + LoRA.
+## Dataset
 
-### ✅ Usage
+- UMU-Bench: https://huggingface.co/datasets/chengyewang/UMU-bench
 
-To execute the GA baseline, run the following command:
+Please prepare the processed data splits under your target data directory.
 
-```bash
-python GA.py \
-    --base_model_dir <path_to_base_model> \
-    --lora_dir <path_to_pre_unlearning_lora> \
-    --save_dir <path_to_save_checkpoint> \
-    --data_split_dir <path_to_data_split> \
-    --forget_split_ratio <forget_ratio> \
-    --batch_size <batch_size> \
-    --lr <learning_rate> \
-    --num_epochs <num_epochs>
-```
+## Files
 
-📁 **Output**
+- `finetune.py`: fine-tuning script for obtaining the **pre-unlearning LoRA**
+- `eval.py`: evaluation script
+- `GA.py`: Gradient Ascent
+- `GD.py`: Gradient Difference
+- `KL.py`: KL-based unlearning
+- `NPO.py`: Negative Preference Optimization
+- `MANU.py`: pruning-based unlearning
+- `CSAU.py`: CMJU method on UMU-Bench
 
-The script saves one adapter checkpoint per epoch under save_dir/epoch_x.
+## Workflow
 
-## GD
+1. Prepare the dataset
+2. Fine-tune the base model to obtain the **pre-unlearning LoRA**
+3. Run one unlearning method
+4. Evaluate the unlearned model
 
-This section describes how to run the GD (Gradient Difference) baseline.
-GD maximizes the loss on the forget set while minimizing the loss on the retain set, starting from a pre-unlearning model constructed as base model + LoRA.
+For most LoRA-based methods, the pre-unlearning model is:
 
-To execute the GD baseline, run the following command:
+    base_model + pre-unlearning LoRA
 
-```bash
-python GD.py \
-    --vanilla_dir <path_to_vanilla_model> \
-    --save_dir <path_to_save_forget_model> \
-    --data_split_dir <path_to_data_split> \
-    --gamma <gamma_value> \
-    --forget_split_ratio <forget_ratio> \
-    --batch_size <batch_size> \
-    --alpha <alpha_value> \
-    --lr <learning_rate> \
-    --num_epochs <num_epochs>
+For `MANU.py`, the LoRA is first merged into the base model and pruning is then applied to the merged model.
 
-python GD.py \
-    --base_model_dir <path_to_base_model> \
-    --lora_dir <path_to_pre_unlearning_lora> \
-    --save_dir <path_to_save_checkpoint> \
-    --data_split_dir <path_to_data_split> \
-    --forget_split_ratio <forget_ratio> \
-    --batch_size <batch_size> \
-    --retain_steps_per_forget <retain_steps_per_forget> \
-    --lr <learning_rate> \
-    --num_epochs <num_epochs>
-```
+## Fine-tuning
 
-## KL
+Example:
 
-This section describes how to run the KL baseline.
-KL maximizes the task loss on the forget set while preserving retained knowledge by minimizing KL divergence between the current model (student) and a frozen pre-unlearning model (oracle) on the retain set. Both student and oracle are initialized from base model + LoRA.
+    CUDA_VISIBLE_DEVICES=0,1 python finetune.py \
+      --base_model_dir /path/to/llava-1.5-7b-hf \
+      --save_dir /path/to/save/pre_unlearning_model \
+      --data_dir /path/to/umu_bench_train.parquet \
+      --batch_size 4 \
+      --lr 2e-5 \
+      --num_epochs 5 \
+      --max_length 384
 
-### ✅ Usage
+The final LoRA adapter is typically saved under:
 
-To execute the KL baseline, run the following command:
+    /save_dir/final_adapter
 
-```bash
-python KL.py \
-    --base_model_dir <path_to_base_model> \
-    --lora_dir <path_to_pre_unlearning_lora> \
-    --save_dir <path_to_save_checkpoint> \
-    --data_split_dir <path_to_data_split> \
-    --forget_split_ratio <forget_ratio> \
-    --batch_size <batch_size> \
-    --retain_steps_per_forget <retain_steps_per_forget> \
-    --lr <learning_rate> \
-    --num_epochs <num_epochs>
-```
+## Unlearning
 
-## NPO
+### GA
 
-This section describes how to run the NPO (Negative Preference Optimization) baseline.
-NPO performs forgetting by comparing the current model against a frozen pre-unlearning reference model on the forget set. In this implementation, both the trainable student and the frozen oracle are initialized from base model + LoRA. An optional retain loss can also be enabled.
+    python GA.py \
+      --base_model_dir /path/to/llava-1.5-7b-hf \
+      --lora_dir /path/to/pre_unlearning_lora \
+      --save_dir /path/to/save/checkpoints \
+      --data_split_dir /path/to/data_split \
+      --forget_split_ratio 5 \
+      --batch_size 4 \
+      --grad_accum_steps 2 \
+      --lr 5e-5 \
+      --num_epochs 5 \
+      --clip_grad_norm 1.0
 
-### ✅ Usage
+### GD
 
-To execute the NPO baseline, run the following command:
+    python GD.py \
+      --base_model_dir /path/to/llava-1.5-7b-hf \
+      --lora_dir /path/to/pre_unlearning_lora \
+      --save_dir /path/to/save/checkpoints \
+      --data_split_dir /path/to/data_split \
+      --forget_split_ratio 5 \
+      --batch_size 4 \
+      --grad_accum_steps 2 \
+      --retain_steps_per_forget 2 \
+      --lr 5e-5 \
+      --num_epochs 5 \
+      --clip_grad_norm 1.0
 
-```bash
-python NPO.py \
-    --base_model_dir <path_to_base_model> \
-    --lora_dir <path_to_pre_unlearning_lora> \
-    --save_dir <path_to_save_checkpoint> \
-    --data_split_dir <path_to_data_split> \
-    --forget_split_ratio <forget_ratio> \
-    --batch_size <batch_size> \
-    --beta <beta_value> \
-    --lr <learning_rate> \
-    --num_epochs <num_epochs>
-```
+### KL
 
-## MANU
+    python KL.py \
+      --base_model_dir /path/to/llava-1.5-7b-hf \
+      --lora_dir /path/to/pre_unlearning_lora \
+      --save_dir /path/to/save/checkpoints \
+      --data_split_dir /path/to/data_split \
+      --forget_split_ratio 5 \
+      --batch_size 4 \
+      --grad_accum_steps 2 \
+      --retain_steps_per_forget 1 \
+      --lr 1e-5 \
+      --num_epochs 5 \
+      --clip_grad_norm 1.0
 
-This section describes how to run the MANU baseline.
-MANU is a neuron-pruning baseline. It first constructs a full model by merging base model + LoRA, then collects activation statistics on forget and retain data, computes neuron importance scores, and finally prunes the top-ranked neurons globally.
+### NPO
 
-### ✅ Usage
+    python NPO.py \
+      --base_model_dir /path/to/llava-1.5-7b-hf \
+      --lora_dir /path/to/pre_unlearning_lora \
+      --save_dir /path/to/save/checkpoints \
+      --data_split_dir /path/to/data_split \
+      --forget_split_ratio 5 \
+      --batch_size 4 \
+      --grad_accum_steps 2 \
+      --beta 0.4 \
+      --lr 1e-5 \
+      --num_epochs 5 \
+      --clip_grad_norm 1.0 \
+      --use_retain 1 \
+      --retain_steps_per_forget 1
 
-To execute the MANY baseline, run the following command:
+### MANU
 
-```bash
-python MANU.py \
-    --base_model_dir <path_to_base_model> \
-    --lora_dir <path_to_lora> \
-    --save_dir <path_to_save_pruned_model> \
-    --data_split_dir <path_to_data_split> \
-    --forget_split_ratio <forget_ratio> \
-    --batch_size <batch_size> \
-    --max_length <unimodal_max_length> \
-    --mm_max_length <multimodal_max_length> \
-    --num_workers <num_workers> \
-    --prune_percent <prune_percent> \
-    --vision_last_n <vision_last_n> \
-    --text_last_n <text_last_n> \
-    --weight_abs <weight_abs> \
-    --weight_freq <weight_freq> \
-    --weight_var <weight_var> \
-    --weight_rms <weight_rms>
-```
+    python MANU.py \
+      --base_model_dir /path/to/llava-1.5-7b-hf \
+      --lora_dir /path/to/pre_unlearning_lora \
+      --save_dir /path/to/save/pruned_model \
+      --data_split_dir /path/to/data_split \
+      --forget_split_ratio 5 \
+      --batch_size 4 \
+      --max_batches 100 \
+      --prune_percent 10 \
+      --vision_last_n 3 \
+      --text_last_n 3
+
+### CSAU
+
+    python CSAU.py \
+      --base_model_dir /path/to/llava-1.5-7b-hf \
+      --lora_dir /path/to/pre_unlearning_lora \
+      --save_dir /path/to/save/checkpoints \
+      --data_split_dir /path/to/data_split \
+      --cache_dir /path/to/cache_dir \
+      --forget_split_ratio 5 \
+      --batch_size 4 \
+      --grad_accum_steps 2 \
+      --lr 5e-6 \
+      --num_epochs 10 \
+      --alpha_shared 1.0 \
+      --beta_specific 2.0 \
+      --alpha_forget 1.0 \
+      --retain_steps_per_forget 4 \
+      --gamma_sym 0.5 \
+      --top_k_ratio 0.3 \
+      --modality_margin 0.05 \
+      --retain_loss_threshold 30.0 \
+      --clip_grad_norm 1.0
+
+## Evaluation
+
+Example for LoRA-based methods:
+
+    python eval.py \
+      --base_model_dir /path/to/llava-1.5-7b-hf \
+      --model_path /path/to/model_or_lora \
+      --model_type lora \
+      --forget_split_ratio 5 \
+      --data_split_dir /path/to/data_split \
+      --output_path /path/to/output_dir \
+      --output_file result.json
+
+Example for full-model methods such as `MANU`:
+
+    python eval.py \
+      --base_model_dir /path/to/llava-1.5-7b-hf \
+      --model_path /path/to/full_model \
+      --model_type full \
+      --forget_split_ratio 5 \
+      --data_split_dir /path/to/data_split \
+      --output_path /path/to/output_dir \
+      --output_file result.json
+
+## Notes
+
+- LoRA-based methods: `GA`, `GD`, `KL`, `NPO`, `CSAU`
+- Full-model method: `MANU`
+- One adapter checkpoint is usually saved per epoch for LoRA-based unlearning methods
+- `eval.py` uses:
+  - `model_type=lora` for LoRA checkpoints
+  - `model_type=full` for merged/pruned full models

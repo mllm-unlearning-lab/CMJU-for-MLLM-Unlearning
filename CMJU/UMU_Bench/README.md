@@ -17,7 +17,7 @@ Please prepare the processed data splits under your target data directory.
 - `KL.py`: KL-based unlearning
 - `NPO.py`: Negative Preference Optimization
 - `MANU.py`: pruning-based unlearning
-- `CSAU.py`: CMJU method on UMU-Bench
+- `CMJU.py`: CMJU method on UMU-Bench
 
 ## Workflow
 
@@ -126,9 +126,9 @@ The final LoRA adapter is typically saved under:
       --vision_last_n 3 \
       --text_last_n 3
 
-### CSAU
+### CMJU
 
-    python CSAU.py \
+    python CMJU.py \
       --base_model_dir /path/to/llava-1.5-7b-hf \
       --lora_dir /path/to/pre_unlearning_lora \
       --save_dir /path/to/save/checkpoints \
@@ -175,7 +175,7 @@ Example for full-model methods such as `MANU`:
 
 ## Notes
 
-- LoRA-based methods: `GA`, `GD`, `KL`, `NPO`, `CSAU`
+- LoRA-based methods: `GA`, `GD`, `KL`, `NPO`, `CMJU`
 - Full-model method: `MANU`
 - One adapter checkpoint is usually saved per epoch for LoRA-based unlearning methods
 - `eval.py` uses:

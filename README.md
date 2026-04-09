@@ -38,7 +38,7 @@ Each directory contains:
   - `KL.py`
   - `NPO.py`
   - `MANU.py`
-  - `CSAU.py`
+  - `CMJU.py`
 - evaluation scripts
 
 ## Workflow

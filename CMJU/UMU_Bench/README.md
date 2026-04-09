@@ -36,7 +36,7 @@ For `MANU.py`, the LoRA is first merged into the base model and pruning is then 
 
 Example:
 
-    CUDA_VISIBLE_DEVICES=0,1 python finetune.py \
+    python finetune.py \
       --base_model_dir /path/to/llava-1.5-7b-hf \
       --save_dir /path/to/save/pre_unlearning_model \
       --data_dir /path/to/umu_bench_train.parquet \

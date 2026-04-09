@@ -1,4 +1,3 @@
-````markdown
 # CMJU for MLLM Unlearning
 
 Official implementation of **CMJU**: **Cross-Modal Joint Unlearning for Balanced Forgetting in Multimodal Large Language Models**.
@@ -18,36 +17,33 @@ CMJU explicitly coordinates multimodal and text-only forgetting signals to impro
 
 ## Repository Structure
 
-```text
-CMJU-for-MLLM-Unlearning/
-├── README.md
-└── CMJU/
-    ├── CLEAR/
-    └── UMU_Bench/
-````
+    CMJU-for-MLLM-Unlearning/
+    ├── README.md
+    └── CMJU/
+        ├── CLEAR/
+        └── UMU_Bench/
 
-* `CMJU/CLEAR/`: code for experiments on the **CLEAR** benchmark
-* `CMJU/UMU_Bench/`: code for experiments on the **UMU-Bench** benchmark
+- `CMJU/CLEAR/`: code for experiments on the **CLEAR** benchmark
+- `CMJU/UMU_Bench/`: code for experiments on the **UMU-Bench** benchmark
 
 ## Supported Datasets
 
-* **UMU-Bench**: [https://huggingface.co/datasets/chengyewang/UMU-bench](https://huggingface.co/datasets/chengyewang/UMU-bench)
-* **CLEAR**: [https://huggingface.co/datasets/therem/CLEAR](https://huggingface.co/datasets/therem/CLEAR)
+- **UMU-Bench**: https://huggingface.co/datasets/chengyewang/UMU-bench
+- **CLEAR**: https://huggingface.co/datasets/therem/CLEAR
 
 ## Main Components
 
 Each dataset directory includes:
 
-* fine-tuning scripts for obtaining the **pre-unlearning model**
-* unlearning methods:
-
-  * `GA.py`
-  * `GD.py`
-  * `KL.py`
-  * `NPO.py`
-  * `MANU.py`
-  * `CSAU.py`
-* evaluation scripts
+- fine-tuning scripts for obtaining the **pre-unlearning model**
+- unlearning methods:
+  - `GA.py`
+  - `GD.py`
+  - `KL.py`
+  - `NPO.py`
+  - `MANU.py`
+  - `CSAU.py`
+- evaluation scripts
 
 ## Workflow
 
@@ -58,9 +54,7 @@ Each dataset directory includes:
 
 For most LoRA-based methods, the pre-unlearning model is:
 
-```text
-base_model + pre-unlearning LoRA
-```
+    base_model + pre-unlearning LoRA
 
 For pruning-based methods such as `MANU`, the LoRA is first merged into the base model and pruning is then applied to the merged model.
 
@@ -72,15 +66,15 @@ Experiments on **UMU-Bench** and **CLEAR** show that CMJU achieves better **cros
 
 Please refer to the dataset-specific directories for detailed instructions:
 
-* `CMJU/UMU_Bench/`
-* `CMJU/CLEAR/`
+- `CMJU/UMU_Bench/`
+- `CMJU/CLEAR/`
 
 ## Acknowledgements
 
 We thank the authors and maintainers of:
 
-* UMU-Bench
-* CLEAR
-* Hugging Face Transformers
-* PEFT
-* Accelerate
+- UMU-Bench
+- CLEAR
+- Hugging Face Transformers
+- PEFT
+- Accelerate
